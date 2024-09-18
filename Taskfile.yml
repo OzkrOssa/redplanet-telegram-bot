@@ -1,0 +1,31 @@
+# https://taskfile.dev
+
+version: '3'
+
+dotenv:
+  - ".env"
+
+tasks:
+  default:
+    desc: "Gettings started"
+    cmds:
+      - task: install
+
+  install:
+    desc: "Install dependencies"
+    cmds:
+      - go mod download
+      - go install github.com/go-task/task/v3/cmd/task@latest
+      - go install github.com/air-verse/air@latest
+  
+  service:up:
+    desc: "Start Service"
+    cmd: podman-compose up -d
+
+  service:down:
+    desc: "Stop services"
+    cmd: podman-compose down
+  
+  dev:
+    desc: "Start development server"
+    cmd: air
