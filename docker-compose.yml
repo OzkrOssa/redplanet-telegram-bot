@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+  rbt:
+    build: .
+    container_name: rbt
+    restart: always
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      MIKROTIK_USER: ${MIKROTIK_USER}
+      MIKROTIK_PASSWORD: ${MIKROTIK_PASSWORD}
+      PROVIDER_USER: ${PROVIDER_USER}
+      PROVIDER_PASSWORD: ${PROVIDER_PASSWORD}
