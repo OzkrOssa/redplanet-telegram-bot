@@ -3,6 +3,7 @@ package main
 import (
 	"log/slog"
 
+	"github.com/OzkrOssa/redplanet-telegram-bot/internal/adapter/callbackquery"
 	"github.com/OzkrOssa/redplanet-telegram-bot/internal/adapter/commands"
 	"github.com/OzkrOssa/redplanet-telegram-bot/internal/adapter/config"
 	"github.com/OzkrOssa/redplanet-telegram-bot/internal/adapter/jobs"
@@ -21,7 +22,7 @@ func main() {
 		panic(err)
 	}
 
-	bot.Debug = true
+	bot.Debug = false
 	updateConfig := tgbotapi.NewUpdate(0)
 	updateConfig.Timeout = 30
 	updates := bot.GetUpdatesChan(updateConfig)
@@ -35,11 +36,15 @@ func main() {
 	for update := range updates {
 
 		if update.Message != nil {
-			adapter := commands.NewCommandService(bot, &update, *config.RouterOsApi)
-			err := adapter.ProcessCommand()
+			adapter := commands.NewCommandHandler(bot, &update, *config.RouterOsApi)
+			err := adapter.HandlerCommands()
 			if err != nil {
 				slog.Error("command error", "ERROR", err)
 			}
+		} else if update.CallbackQuery != nil {
+			c := callbackquery.NewCallbackQueryHandler(bot, &update, *config.RouterOsApi)
+			c.ProcessCallbackQuery()
+
 		}
 	}
 
