@@ -71,7 +71,7 @@ func (mj *MonitorJobs) coreTraffic() {
 	}
 
 	switch {
-	case int64(Rx) > 4000000000:
+	case int64(Rx) > 5000000000: // 4.6566 GB
 		textMessage := fmt.Sprintf("⚠️ <b><i>%s</i></b> supero el umbral de trafico de <b><i>%s</i></b> ⚠️", *traffic.Source, utils.FormatSize(4000000000))
 		message := tgbotapi.NewMessage(int64(chatID), textMessage)
 		message.ParseMode = "Html"
