@@ -70,13 +70,16 @@ func (mj *MonitorJobs) coreTraffic() {
 		log.Println(err)
 	}
 
+	rxMaxUmbral := 5000000000
+	rxMinUmbral := 750000000
+
 	switch {
-	case int64(Rx) > 5000000000: // 4.6566 GB
-		textMessage := fmt.Sprintf("⚠️ <b><i>%s</i></b> supero el umbral de trafico de <b><i>%s</i></b> ⚠️", *traffic.Source, utils.FormatSize(4000000000))
+	case int64(Rx) > int64(rxMaxUmbral): // 4.6566 GB
+		textMessage := fmt.Sprintf("⚠️ <b><i>%s</i></b> supero el umbral de trafico de <b><i>%s</i></b> ⚠️", *traffic.Source, utils.FormatSize(int64(rxMaxUmbral)))
 		message := tgbotapi.NewMessage(int64(chatID), textMessage)
 		message.ParseMode = "Html"
 		mj.bot.Send(message)
-	case int64(Rx) < 750000000:
+	case int64(Rx) < int64(rxMinUmbral):
 		textMessage := fmt.Sprintf("❌ El Trafico cayo a <b><i>%s</i></b> en <b><i>%s</i></b> ❌", utils.FormatSize(int64(Rx)), *traffic.Source)
 		message := tgbotapi.NewMessage(int64(chatID), textMessage)
 		message.ParseMode = "Html"
