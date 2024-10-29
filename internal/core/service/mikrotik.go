@@ -101,3 +101,12 @@ func (ms *MikrotikService) GetTraffic(mikrotikInterface string) (*domain.Traffic
 
 	return traffic, nil
 }
+
+func (ms *MikrotikService) ChangeMangleRuleStatus(status string) error {
+	cmd := fmt.Sprintf("/ip/firewall/mangle/%s", status)
+	_, err := ms.client.Run(cmd, "=numbers=0")
+	if err != nil {
+		return err
+	}
+	return nil
+}
