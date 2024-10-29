@@ -6,6 +6,8 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"strings"
+	"sync"
 
 	"github.com/OzkrOssa/redplanet-telegram-bot/internal/adapter/config"
 	"github.com/OzkrOssa/redplanet-telegram-bot/internal/core/domain"
@@ -41,6 +43,10 @@ func (cb *CallbackQuery) ProcessCallbackQuery() {
 		cb.Router(domain.SFP7, os.Getenv("CORE_ADDRESS"))
 	case "comerciales":
 		cb.Router(domain.Ether1, os.Getenv("NODO_COMERCIAL"))
+	case "backup_enable":
+		cb.Backup("enable")
+	case "backup_disable":
+		cb.Backup("disable")
 
 	}
 
@@ -74,6 +80,60 @@ func (cb *CallbackQuery) Router(Iface domain.MikrotikInterface, host string) err
 	_, err = cb.bot.Send(message)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+type backupResponse struct {
+	host string
+	desc string
+}
+
+func (cb *CallbackQuery) Backup(status string) error {
+	var wg sync.WaitGroup
+
+	hosts := strings.Split(os.Getenv("HOSTS"), ",")
+
+	errChan := make(chan error, len(hosts))
+	responseChan := make(chan backupResponse, len(hosts))
+
+	for _, host := range hosts {
+		wg.Add(1)
+		go func(h string) {
+			defer wg.Done()
+			service, err := service.NewMikrotikService(host, cb.config)
+			if err != nil {
+				errChan <- err
+			}
+
+			err = service.ChangeMangleRuleStatus(status)
+			if err != nil {
+				errChan <- err
+			}
+
+			responseChan <- backupResponse{
+				host: h,
+				desc: fmt.Sprintf("backup was %s", status),
+			}
+		}(host)
+	}
+
+	go func() {
+		wg.Wait()
+		close(responseChan)
+		close(errChan)
+	}()
+
+	for ch := range responseChan {
+		textMessage := fmt.Sprintf("<b><i>Host:</i></b> %s\n<b><i>Desc:</i></b> %s\n", ch.host, ch.desc)
+
+		message := tgbotapi.NewMessage(cb.update.CallbackQuery.Message.Chat.ID, textMessage)
+		message.ParseMode = "Html"
+		_, err := cb.bot.Send(message)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
