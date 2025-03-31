@@ -110,3 +110,47 @@ func (ms *MikrotikService) ChangeMangleRuleStatus(status string) error {
 	}
 	return nil
 }
+
+func (ms *MikrotikService) ChangeStaticRoutesStatus(event string) error {
+	routesList, err := ms.client.Run("/ip/route/print")
+	if err != nil {
+		return err
+	}
+	switch event {
+	case "normal":
+		for _, route := range routesList.Re {
+			if route.Map["disabled"] == "true" {
+				_, err := ms.client.Run("/ip/route/set", "=numbers="+route.Map[".id"], "=disabled=false")
+				if err != nil {
+					return err
+				}
+			}
+		}
+	case "azt_down":
+		aztGateways := map[string]bool{
+			"177.93.60.209":   true,
+			"186.179.103.241": true,
+			"200.69.92.1":     true,
+		}
+
+		for _, route := range routesList.Re {
+			if aztGateways[route.Map["gateway"]] {
+				_, err := ms.client.Run("/ip/route/set", "=numbers="+route.Map[".id"], "=disabled=true")
+				if err != nil {
+					return err
+				}
+			}
+		}
+	case "ufinet_down":
+		for _, route := range routesList.Re {
+			if route.Map["gateway"] == "190.60.55.97" {
+				_, err := ms.client.Run("/ip/route/set", "=numbers="+route.Map[".id"], "=disabled=true")
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}

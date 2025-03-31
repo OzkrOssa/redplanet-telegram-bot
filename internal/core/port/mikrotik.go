@@ -7,4 +7,5 @@ type MikrotikService interface {
 	GetResources() (*domain.Resource, error)
 	GetTraffic(mikrotikInterface string) (*domain.Traffic, error)
 	ChangeMangleRuleStatus(status string) error
+	ChangeStatusStaticRoutes(event string) error
 }

@@ -47,6 +47,12 @@ func (cb *CallbackQuery) ProcessCallbackQuery() {
 		cb.Backup("enable")
 	case "backup_disable":
 		cb.Backup("disable")
+	case "normal":
+		cb.Events("normal")
+	case "azt_down":
+		cb.Events("azt_down")
+	case "ufinet_down":
+		cb.Events("ufinet_down")
 
 	}
 
@@ -136,5 +142,51 @@ func (cb *CallbackQuery) Backup(status string) error {
 		}
 	}
 
+	return nil
+}
+
+func (cb *CallbackQuery) Events(event string) error {
+	var wg sync.WaitGroup
+	hosts := strings.Split(os.Getenv("HOSTS_EVENT"), ",")
+
+	errChan := make(chan error, len(hosts))
+	responseChan := make(chan backupResponse, len(hosts))
+	for _, host := range hosts {
+		wg.Add(1)
+		go func(h string) {
+			defer wg.Done()
+			service, err := service.NewMikrotikService(host, cb.config)
+			if err != nil {
+				errChan <- err
+			}
+
+			err = service.ChangeStaticRoutesStatus(event)
+			if err != nil {
+				errChan <- err
+			}
+
+			responseChan <- backupResponse{
+				host: h,
+				desc: fmt.Sprintf("activated protocol for %s", event),
+			}
+		}(host)
+	}
+
+	go func() {
+		wg.Wait()
+		close(responseChan)
+		close(errChan)
+	}()
+
+	for ch := range responseChan {
+		textMessage := fmt.Sprintf("<b><i>Host:</i></b> %s\n<b><i>Desc:</i></b> %s\n", ch.host, ch.desc)
+
+		message := tgbotapi.NewMessage(cb.update.CallbackQuery.Message.Chat.ID, textMessage)
+		message.ParseMode = "Html"
+		_, err := cb.bot.Send(message)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

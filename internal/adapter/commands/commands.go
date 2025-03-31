@@ -30,6 +30,8 @@ func (cs *CommandHandler) HandlerCommands() error {
 		return cs.SendKeyboardCoreRiosucio()
 	case "respaldo":
 		return cs.SendKeyboardBackUp()
+	case "eventos":
+		return cs.SendKeyboardEvents()
 
 	}
 	return nil
@@ -56,6 +58,15 @@ func (cs *CommandHandler) SendKeyboardCoreRiosucio() error {
 func (cs *CommandHandler) SendKeyboardBackUp() error {
 	msg := tgbotapi.NewMessage(cs.update.Message.Chat.ID, cs.update.Message.Text)
 	msg.ReplyMarkup = keyboard.BackupKeyboard
+
+	_, err := cs.bot.Send(msg)
+	return err
+
+}
+
+func (cs *CommandHandler) SendKeyboardEvents() error {
+	msg := tgbotapi.NewMessage(cs.update.Message.Chat.ID, cs.update.Message.Text)
+	msg.ReplyMarkup = keyboard.EventsKeyboard
 
 	_, err := cs.bot.Send(msg)
 	return err

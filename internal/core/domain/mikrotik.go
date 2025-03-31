@@ -41,3 +41,22 @@ type Traffic struct {
 	Rx     string
 	Tx     string
 }
+
+type Routers struct {
+	Name    string  `yaml:"name"`
+	Address string  `yaml:"address"`
+	Routes  []Route `yaml:"routes"`
+}
+type Route struct {
+	Event       string `yaml:"event"`
+	Destination string `yaml:"destination"`
+	Gateway     string `yaml:"gateway"`
+	Distance    int    `yaml:"distance"`
+	RoutingMark string `yaml:"routing_mark"`
+	Comment     string `yaml:"comment"`
+	Disabled    bool   `yaml:"disabled"`
+}
+
+type RouterRoutes struct {
+	Routers []Routers `yaml:"routers"`
+}
