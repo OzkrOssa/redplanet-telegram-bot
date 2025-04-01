@@ -165,6 +165,11 @@ func (cb *CallbackQuery) Events(event string) error {
 				errChan <- err
 			}
 
+			err = service.ChangeSimpleQueuesStatus(event)
+			if err != nil {
+				errChan <- err
+			}
+
 			responseChan <- backupResponse{
 				host: h,
 				desc: fmt.Sprintf("activated protocol for %s", event),

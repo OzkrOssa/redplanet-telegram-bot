@@ -154,3 +154,40 @@ func (ms *MikrotikService) ChangeStaticRoutesStatus(event string) error {
 
 	return nil
 }
+
+func (ms *MikrotikService) ChangeSimpleQueuesStatus(event string) error {
+	queuesList, err := ms.client.Run("/queue/simple/print")
+	if err != nil {
+		return err
+	}
+	switch event {
+	case "normal":
+		for _, queue := range queuesList.Re {
+			if queue.Map["comment"] == "ONDOWN" {
+				_, err := ms.client.Run("/queue/simple/set", "=numbers="+queue.Map[".id"], "=disabled=true")
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+	case "azt_down":
+		for _, queue := range queuesList.Re {
+			if queue.Map["comment"] == "ONDOWN" {
+				_, err := ms.client.Run("/queue/simple/set", "=numbers="+queue.Map[".id"], "=disabled=false")
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+	case "ufinet_down":
+		for _, queue := range queuesList.Re {
+			if queue.Map["comment"] == "ONDOWN" {
+				_, err := ms.client.Run("/queue/simple/set", "=numbers="+queue.Map[".id"], "=disabled=false")
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+	}
+	return nil
+}
