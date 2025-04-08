@@ -9,4 +9,5 @@ type MikrotikService interface {
 	ChangeMangleRuleStatus(status string) error
 	ChangeStatusStaticRoutes(event string) error
 	ChangeStatusSimpleQueues(event string) error
+	ChangeNametoAddressList(event string) error
 }

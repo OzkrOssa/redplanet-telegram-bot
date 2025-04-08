@@ -151,6 +151,7 @@ func (cb *CallbackQuery) Events(event string) error {
 
 	errChan := make(chan error, len(hosts))
 	responseChan := make(chan backupResponse, len(hosts))
+
 	for _, host := range hosts {
 		wg.Add(1)
 		go func(h string) {
@@ -168,6 +169,13 @@ func (cb *CallbackQuery) Events(event string) error {
 			err = service.ChangeSimpleQueuesStatus(event)
 			if err != nil {
 				errChan <- err
+			}
+
+			if host == os.Getenv("BALANCEADOR") {
+				err = service.ChangeNametoAddressList(event)
+				if err != nil {
+					errChan <- err
+				}
 			}
 
 			responseChan <- backupResponse{

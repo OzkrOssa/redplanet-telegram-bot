@@ -191,3 +191,51 @@ func (ms *MikrotikService) ChangeSimpleQueuesStatus(event string) error {
 	}
 	return nil
 }
+
+func (ms *MikrotikService) ChangeNametoAddressList(event string) error {
+	addressList, err := ms.client.Run("/ip/firewall/address-list/print")
+	if err != nil {
+		return err
+	}
+
+	routersName := map[string]bool{
+		"PuebloViejo": true,
+		"Cabuyal":     true,
+		"Clavijo":     true,
+		"Blandon":     true,
+		"Tabuyo":      true,
+		"Calera":      true,
+	}
+	switch event {
+	case "normal":
+		for _, list := range addressList.Re {
+			if routersName[list.Map["comment"]] {
+				_, err := ms.client.Run("/ip/firewall/address-list/set", "=numbers="+list.Map[".id"], "=list=2")
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+	case "azt_down":
+		for _, queue := range addressList.Re {
+			switch queue.Map["comment"] {
+			case "PuebloViejo", "Clavijo":
+				_, err := ms.client.Run("/ip/firewall/address-list/set", "=numbers="+queue.Map[".id"], "=list=1")
+				if err != nil {
+					panic(err)
+				}
+			case "Cabuyal", "Calera":
+				_, err := ms.client.Run("/ip/firewall/address-list/set", "=numbers="+queue.Map[".id"], "=list=4")
+				if err != nil {
+					panic(err)
+				}
+			case "Blandon", "Tabuyo":
+				_, err := ms.client.Run("/ip/firewall/address-list/set", "=numbers="+queue.Map[".id"], "=list=5")
+				if err != nil {
+					panic(err)
+				}
+			}
+		}
+	}
+	return nil
+}
