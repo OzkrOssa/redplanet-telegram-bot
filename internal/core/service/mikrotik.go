@@ -143,7 +143,7 @@ func (ms *MikrotikService) ChangeStaticRoutesStatus(event string) error {
 		}
 	case "ufinet_down":
 		for _, route := range routesList.Re {
-			if route.Map["gateway"] == "190.60.55.97" {
+			if route.Map["gateway"] == "190.60.55.193" {
 				_, err := ms.client.Run("/ip/route/set", "=numbers="+route.Map[".id"], "=disabled=true")
 				if err != nil {
 					return err
