@@ -219,7 +219,7 @@ func (ms *MikrotikService) ChangeNametoAddressList(event string) error {
 	case "azt_down":
 		for _, queue := range addressList.Re {
 			switch queue.Map["comment"] {
-			case "moron":
+			case "Moron":
 				_, err := ms.client.Run("/ip/firewall/address-list/set", "=numbers="+queue.Map[".id"], "=list=1")
 				if err != nil {
 					panic(err)
