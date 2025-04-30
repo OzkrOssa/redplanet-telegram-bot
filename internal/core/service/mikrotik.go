@@ -219,12 +219,12 @@ func (ms *MikrotikService) ChangeNametoAddressList(event string) error {
 	case "azt_down":
 		for _, queue := range addressList.Re {
 			switch queue.Map["comment"] {
-			case "PuebloViejo", "Clavijo":
+			case "moron":
 				_, err := ms.client.Run("/ip/firewall/address-list/set", "=numbers="+queue.Map[".id"], "=list=1")
 				if err != nil {
 					panic(err)
 				}
-			case "Cabuyal", "Calera":
+			case "PuebloViejo", "Clavijo", "Calera", "Cabuyal":
 				_, err := ms.client.Run("/ip/firewall/address-list/set", "=numbers="+queue.Map[".id"], "=list=4")
 				if err != nil {
 					panic(err)
@@ -234,7 +234,9 @@ func (ms *MikrotikService) ChangeNametoAddressList(event string) error {
 				if err != nil {
 					panic(err)
 				}
+
 			}
+
 		}
 	}
 	return nil
