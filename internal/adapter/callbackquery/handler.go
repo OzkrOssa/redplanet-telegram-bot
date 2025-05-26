@@ -43,6 +43,8 @@ func (cb *CallbackQuery) ProcessCallbackQuery() {
 		cb.Router(domain.SFP7, os.Getenv("CORE_ADDRESS"))
 	case "comerciales":
 		cb.Router(domain.Ether1, os.Getenv("NODO_COMERCIAL"))
+	case "ufinet":
+		cb.Router(domain.SFP1, os.Getenv("CORE_SUPIA_ADDRESS"))
 	case "backup_enable":
 		cb.Backup("enable")
 	case "backup_disable":

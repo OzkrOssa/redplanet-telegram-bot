@@ -38,6 +38,12 @@ func (mj *MonitorJobs) Run() error {
 	if err != nil {
 		return err
 	}
+
+	_, err = mj.cron.AddFunc("* 6-23 * * *", mj.coreSupiaTraffic)
+	if err != nil {
+		return err
+	}
+
 	_, err = mj.cron.AddFunc("* 6-23 * * *", mj.coreResources)
 	if err != nil {
 		return err
@@ -108,6 +114,45 @@ func (mj *MonitorJobs) coreResources() {
 		log.Printf("Current CPU load: %d", cpu)
 		textMessage := fmt.Sprintf("⚡ La CPU en <b><i>%s</i></b> supero el <b><i>%d</i></b> ⚡", *resources.Source, cpu)
 		message := tgbotapi.NewMessage(-874165723, textMessage)
+		message.ParseMode = "Html"
+		mj.bot.Send(message)
+	}
+}
+
+func (mj *MonitorJobs) coreSupiaTraffic() {
+	service, err := service.NewMikrotikService(os.Getenv("CORE_SUPIA_ADDRESS"), mj.mikrotikConfig)
+	if err != nil {
+		log.Println(err)
+	}
+
+	traffic, err := service.GetTraffic(string(domain.SFP1))
+	if err != nil {
+		log.Println(err)
+	}
+	Rx, err := strconv.Atoi(traffic.Rx)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println(traffic)
+	chatID, err := strconv.Atoi(os.Getenv("TELGRAM_CHAT_GROUP_ID"))
+	if err != nil {
+		log.Println(err)
+	}
+
+	rxMaxUmbral := 5000000000
+	rxMinUmbral := 750000000
+
+	switch {
+	case int64(Rx) > int64(rxMaxUmbral): // 4.6566 GB
+		textMessage := fmt.Sprintf("⚠️ <b><i>%s</i></b> supero el umbral de trafico de <b><i>%s</i></b> ⚠️", *traffic.Source, utils.FormatSize(int64(rxMaxUmbral)))
+		message := tgbotapi.NewMessage(int64(chatID), textMessage)
+		message.ParseMode = "Html"
+		mj.bot.Send(message)
+	case int64(Rx) < int64(rxMinUmbral):
+		textMessage := fmt.Sprintf("❌ El Trafico cayo a <b><i>%s</i></b> en <b><i>%s</i></b> ❌", utils.FormatSize(int64(Rx)), *traffic.Source)
+		message := tgbotapi.NewMessage(int64(chatID), textMessage)
 		message.ParseMode = "Html"
 		mj.bot.Send(message)
 	}

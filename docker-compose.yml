@@ -5,6 +5,8 @@ services:
     build: .
     container_name: rbt
     restart: always
+    env_file:
+      - .env
     environment:
       TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
       TELGRAM_CHAT_GROUP_ID: ${TELGRAM_CHAT_GROUP_ID}
